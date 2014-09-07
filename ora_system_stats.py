@@ -8,26 +8,35 @@ import string
 
 hostname = os.uname()[1]
 
-class orastats:
+class OraStats():
+    def __init__(self, user, passwd, sid):
+        import cx_Oracle
+        self.user = user
+        self.passwd = passwd
+        self.sid = sid
+        self.connection = cx_Oracle.connect( self.user , self.passwd , self.sid )
+        cursor = self.connection.cursor()
+        cursor.execute("select HOST_NAME from v$instance")
+        for hostname in cursor:
+            self.hostname = hostname[0]
 
     def asmdf(self, user, passwd, sid, diskname, format):
-        connection = cx_Oracle.connect( user , passwd , sid )
-        cursor = connection.cursor()
+        #connection = cx_Oracle.connect( user , passwd , sid )
+        cursor = self.connection.cursor()
         cursor.execute("select FREE_MB,TOTAL_MB from v$asm_diskgroup where NAME='"+diskname+"'")
         for free_val, total_val in cursor:
             used = (total_val - free_val)
             if format == 'cacti':
                 sys.stdout.write("free:%s total:%s used:%s" % (free_val, total_val, used))
             else:
-                print "PUTVAL %s/oracle/disk_free interval=30 N:%s" % (hostname, free_val)
-                print "PUTVAL %s/oracle/disk_free interval=30 N:%s" % (hostname, total_val)
-                print "PUTVAL %s/oracle/disk_free interval=30 N:%s" % (hostname, used)
+                print "PUTVAL %s/oracle/%s/disk_free interval=30 N:%s" % (self.hostname, sid, free_val)
+                print "PUTVAL %s/oracle/%s/disk_free interval=30 N:%s" % (self.hostname, sid, total_val)
+                print "PUTVAL %s/oracle/%s/disk_free interval=30 N:%s" % (self.hostname, sid, used)
         cursor.close()
-        connection.close()
+        #connection.close()
 
-    def phishio(self,USER,PASSWD,SID,format):
-        connection = cx_Oracle.connect( USER , PASSWD , SID )
-        cursor = connection.cursor()
+    def phishio(self,user,passwrd,sid,format):
+        cursor = self.connection.cursor()
         cursor.execute("""
         select sum ( decode ( name, 'physical reads', value, 0 ) ) datafile_reads,
         sum ( decode ( name, 'physical writes', value, 0 ) ) datafile_writes,
@@ -38,15 +47,13 @@ class orastats:
             if format == 'cacti':
                 sys.stdout.write("datafile_reads:%s datafile_writes:%s redo_writes:%s" % (datafile_reads, datafile_writes, redo_writes))
             else:
-                print "PUTVAL %s/oracle/physicalio-datafile_reads interval=30 N:%s" % (hostname, datafile_reads)
-                print "PUTVAL %s/oracle/physicalio-datafile_writes interval=30 N:%s" % (hostname, datafile_writes)
-                print "PUTVAL %s/oracle/physicalio-redo_writes interval=30 N:%s" % (hostname, redo_writes)
+                print "PUTVAL %s/oracle/%s/physicalio-datafile_reads interval=30 N:%s" % (self.hostname, sid, datafile_reads)
+                print "PUTVAL %s/oracle/%s/physicalio-datafile_writes interval=30 N:%s" % (self.hostname, sid, datafile_writes)
+                print "PUTVAL %s/oracle/%s/physicalio-redo_writes interval=30 N:%s" % (self.hostname, sid, redo_writes)
         cursor.close()
-        connection.close()
 
-    def activity(self,USER,PASSWD,SID,format):
-        connection = cx_Oracle.connect( USER , PASSWD , SID )
-        cursor = connection.cursor()
+    def activity(self,user, passwd, sid, format):
+        cursor = self.connection.cursor()
         cursor.execute("""
         select sum ( decode ( name, 'parse count (total)', value, 0 ) ) parse_count
         , sum ( decode ( name, 'execute count', value, 0 ) ) execute_count
@@ -58,30 +65,26 @@ class orastats:
             if format == 'cacti':
                 sys.stdout.write("parse_count:%s execute_count:%s u_commit:%s u_rollback:%s" % (parse_count, execute_count, u_commit, u_rollback))
             else:
-                print "PUTVAL %s/oracle/activity-parse_count interval=30 N:%s" % (hostname, parse_count)
-                print "PUTVAL %s/oracle/activity-execute_count interval=30 N:%s" % (hostname, execute_count)
-                print "PUTVAL %s/oracle/activity-user_commits interval=30 N:%s" % (hostname, u_commit)
-                print "PUTVAL %s/oracle/activity-user_rollbacks interval=30 N:%s" % (hostname, u_rollback)
+                print "PUTVAL %s/oracle/%s/activity-parse_count interval=30 N:%s" % (self.hostname, sid, parse_count)
+                print "PUTVAL %s/oracle/%s/activity-execute_count interval=30 N:%s" % (self.hostname, sid, execute_count)
+                print "PUTVAL %s/oracle/%s/activity-user_commits interval=30 N:%s" % (self.hostname, sid, u_commit)
+                print "PUTVAL %s/oracle/%s/activity-user_rollbacks interval=30 N:%s" % (self.hostname, sid, u_rollback)
         cursor.close()
-        connection.close()
 
-    def cursorstats(self,USER,PASSWD,SID,format):
-        connection = cx_Oracle.connect( USER , PASSWD , SID )
-        cursor = connection.cursor()
+    def cursorstats(self,user, passwd, sid,format):
+        cursor = self.connection.cursor()
         cursor.execute("""
         select sum ( decode ( name, 'opened cursors cumulative', value, 0)) total_cursors,sum ( decode ( name, 'opened cursors current',value,0)) current_cursors,sum ( decode ( name, 'session cursor cache hits',value,0)) sess_cur_cache_hits from v$sysstat where name in ( 'opened cursors cumulative','opened cursors current','session cursor cache hits' )""")
         for total_cursors, current_cursors, sess_cur_cache_hits in cursor:
             if format == 'cacti':
                 sys.stdout.write("total_cursors:%s current_cursors:%s sess_cur_cache_hits:%s" % (total_cursors, current_cursors, sess_cur_cache_hits))
             else:
-                print "PUTVAL %s/oracle/cursors-total interval=30 N:%s" % (hostname, total_cursors)
-                print "PUTVAL %s/oracle/cursors-current interval=30 N:%s" % (hostname, current_cursors)
-                print "PUTVAL %s/oracle/cursors-cachehits interval=30 N:%s" % (hostname, sess_cur_cache_hits)
+                print "PUTVAL %s/oracle/%s/cursors-total interval=30 N:%s" % (self.hostname, sid, total_cursors)
+                print "PUTVAL %s/oracle/%s/cursors-current interval=30 N:%s" % (self.hostname, sid, current_cursors)
+                print "PUTVAL %s/oracle/%s/cursors-cachehits interval=30 N:%s" % (self.hostname, sid, sess_cur_cache_hits)
         cursor.close()
-        connection.close()
 
-
-
+#connection.close()
 
 
 if __name__ == "__main__":
@@ -115,21 +118,36 @@ if __name__ == "__main__":
     parser_curs.add_argument('-p', '--passwd', required=True)
     parser_curs.add_argument('-s', '--sid', help="tnsnames SID to connect", required=True)
 
+    parser_all = subparsers.add_parser('ALL', help="Get all database stats")
+    parser_all.add_argument('-u', '--user', help="Username with sys views grant", required=True)
+    parser_all.add_argument('-p', '--passwd', required=True)
+    parser_all.add_argument('-s', '--sid', help="tnsnames SID to connect", required=True)
+
     args = parser.parse_args()
 
     if args.stat == "ASM":
         #args_asm = parser_asm.parse_args()
-        stats = orastats()
+        #noinspection PyArgumentList,PyArgumentList,PyArgumentList
+        stats = OraStats(args.user,args.passwd,args.sid,args.disk,args.format)
         stats.asmdf(args.user,args.passwd,args.sid,args.disk,args.format)
 
     if args.stat == "PHYSIO":
-        stats = orastats()
+        #noinspection PyArgumentList,PyArgumentList,PyArgumentList
+        stats = OraStats(args.user,args.passwd,args.sid,args.disk,args.format)
         stats.phishio(args.user, args.passwd, args.sid, args.format)
 
     if args.stat == "ACTV":
-        stats = orastats()
+        #noinspection PyArgumentList,PyArgumentList,PyArgumentList
+        stats = OraStats(args.user,args.passwd,args.sid,args.disk,args.format)
         stats.activity(args.user, args.passwd, args.sid, args.format)
 
     if args.stat == "CURS":
-        stats = orastats()
+        #noinspection PyArgumentList,PyArgumentList,PyArgumentList
+        stats = OraStats(args.user,args.passwd,args.sid,args.disk,args.format)
         stats.cursorstats(args.user, args.passwd, args.sid, args.format)
+
+    if args.stat == "ALL":
+        stats = OraStats(args.user, args.passwd, args.sid)
+        stats.cursorstats(args.user, args.passwd, args.sid, args.format)
+        stats.phishio(args.user, args.passwd, args.sid, args.format)
+        stats.activity(args.user, args.passwd, args.sid, args.format)
