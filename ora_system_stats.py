@@ -29,9 +29,9 @@ class OraStats():
             if format == 'cacti':
                 sys.stdout.write("free:%s total:%s used:%s" % (free_val, total_val, used))
             else:
-                print "PUTVAL %s/oracle/%s/disk_free interval=30 N:%s" % (self.hostname, sid, free_val)
-                print "PUTVAL %s/oracle/%s/disk_free interval=30 N:%s" % (self.hostname, sid, total_val)
-                print "PUTVAL %s/oracle/%s/disk_free interval=30 N:%s" % (self.hostname, sid, used)
+                print "PUTVAL %s/oracle/%s/gauge-disk_free interval=30 N:%s" % (self.hostname, sid, free_val)
+                print "PUTVAL %s/oracle/%s/gauge-disk_free interval=30 N:%s" % (self.hostname, sid, total_val)
+                print "PUTVAL %s/oracle/%s/gauge-disk_free interval=30 N:%s" % (self.hostname, sid, used)
         cursor.close()
         #connection.close()
 
@@ -47,9 +47,9 @@ class OraStats():
             if format == 'cacti':
                 sys.stdout.write("datafile_reads:%s datafile_writes:%s redo_writes:%s" % (datafile_reads, datafile_writes, redo_writes))
             else:
-                print "PUTVAL %s/oracle/%s/physicalio-datafile_reads interval=30 N:%s" % (self.hostname, sid, datafile_reads)
-                print "PUTVAL %s/oracle/%s/physicalio-datafile_writes interval=30 N:%s" % (self.hostname, sid, datafile_writes)
-                print "PUTVAL %s/oracle/%s/physicalio-redo_writes interval=30 N:%s" % (self.hostname, sid, redo_writes)
+                print "PUTVAL %s/oracle/%s/counter-physicalio_datafile_reads interval=30 N:%s" % (self.hostname, sid, datafile_reads)
+                print "PUTVAL %s/oracle/%s/counter-physicalio_datafile_writes interval=30 N:%s" % (self.hostname, sid, datafile_writes)
+                print "PUTVAL %s/oracle/%s/counter-physicalio_redo_writes interval=30 N:%s" % (self.hostname, sid, redo_writes)
         cursor.close()
 
     def activity(self,user, passwd, sid, format):
@@ -65,10 +65,10 @@ class OraStats():
             if format == 'cacti':
                 sys.stdout.write("parse_count:%s execute_count:%s u_commit:%s u_rollback:%s" % (parse_count, execute_count, u_commit, u_rollback))
             else:
-                print "PUTVAL %s/oracle/%s/activity-parse_count interval=30 N:%s" % (self.hostname, sid, parse_count)
-                print "PUTVAL %s/oracle/%s/activity-execute_count interval=30 N:%s" % (self.hostname, sid, execute_count)
-                print "PUTVAL %s/oracle/%s/activity-user_commits interval=30 N:%s" % (self.hostname, sid, u_commit)
-                print "PUTVAL %s/oracle/%s/activity-user_rollbacks interval=30 N:%s" % (self.hostname, sid, u_rollback)
+                print "PUTVAL %s/oracle/%s/counter-activity_parse_count interval=30 N:%s" % (self.hostname, sid, parse_count)
+                print "PUTVAL %s/oracle/%s/counter-activity_execute_count interval=30 N:%s" % (self.hostname, sid, execute_count)
+                print "PUTVAL %s/oracle/%s/counter-activity_user_commits interval=30 N:%s" % (self.hostname, sid, u_commit)
+                print "PUTVAL %s/oracle/%s/counter-activity_user_rollbacks interval=30 N:%s" % (self.hostname, sid, u_rollback)
         cursor.close()
 
     def cursorstats(self,user, passwd, sid,format):
@@ -79,9 +79,9 @@ class OraStats():
             if format == 'cacti':
                 sys.stdout.write("total_cursors:%s current_cursors:%s sess_cur_cache_hits:%s" % (total_cursors, current_cursors, sess_cur_cache_hits))
             else:
-                print "PUTVAL %s/oracle/%s/cursors-total interval=30 N:%s" % (self.hostname, sid, total_cursors)
-                print "PUTVAL %s/oracle/%s/cursors-current interval=30 N:%s" % (self.hostname, sid, current_cursors)
-                print "PUTVAL %s/oracle/%s/cursors-cachehits interval=30 N:%s" % (self.hostname, sid, sess_cur_cache_hits)
+                print "PUTVAL %s/oracle/%s/counter-cursors_total interval=30 N:%s" % (self.hostname, sid, total_cursors)
+                print "PUTVAL %s/oracle/%s/gauge-cursors_current interval=30 N:%s" % (self.hostname, sid, current_cursors)
+                print "PUTVAL %s/oracle/%s/counter-cursors_cachehits interval=30 N:%s" % (self.hostname, sid, sess_cur_cache_hits)
         cursor.close()
 
 #connection.close()
