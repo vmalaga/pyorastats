@@ -15,13 +15,13 @@ class orastats:
         cursor = connection.cursor()
         cursor.execute("select FREE_MB,TOTAL_MB from v$asm_diskgroup where NAME='"+diskname+"'")
         for free_val, total_val in cursor:
-		used = (total_val - free_val)
-        if format == 'cacti':
-            sys.stdout.write("free:%s total:%s used:%s" % (free_val, total_val, used))
-        else:
-            print "PUTVAL %s/oracle/disk_free interval=30 N:%s" % (hostname, free_val)
-            print "PUTVAL %s/oracle/disk_free interval=30 N:%s" % (hostname, total_val)
-            print "PUTVAL %s/oracle/disk_free interval=30 N:%s" % (hostname, used)
+            used = (total_val - free_val)
+            if format == 'cacti':
+                sys.stdout.write("free:%s total:%s used:%s" % (free_val, total_val, used))
+            else:
+                print "PUTVAL %s/oracle/disk_free interval=30 N:%s" % (hostname, free_val)
+                print "PUTVAL %s/oracle/disk_free interval=30 N:%s" % (hostname, total_val)
+                print "PUTVAL %s/oracle/disk_free interval=30 N:%s" % (hostname, used)
         cursor.close()
         connection.close()
 
