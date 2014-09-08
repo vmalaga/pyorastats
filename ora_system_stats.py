@@ -88,9 +88,20 @@ class OraStats():
     def waitstats(self, user, passwd, sid, format):
         cursor = self.connection.cursor()
         cursor.execute("""
-        SELECT wait_class , time_waited
-        FROM v$system_wait_class
-        WHERE wait_class != 'Idle'
+        select n.wait_class, round(m.time_waited/m.INTSIZE_CSEC,3) AAS
+        from   v$waitclassmetric  m, v$system_wait_class n
+        where m.wait_class_id=n.wait_class_id and n.wait_class != 'Idle'
+        union
+        select  'CPU', round(value/100,3) AAS
+        from v$sysmetric where metric_name='CPU Usage Per Sec' and group_id=2
+        union select 'CPU_OS', round((prcnt.busy*parameter.cpu_count)/100,3) - aas.cpu
+        from
+            ( select value busy
+                from v$sysmetric
+                where metric_name='Host CPU Utilization (%)'
+                and group_id=2 ) prcnt,
+                ( select value cpu_count from v$parameter where name='cpu_count' )  parameter,
+                ( select  'CPU', round(value/100,3) cpu from v$sysmetric where metric_name='CPU Usage Per Sec' and group_id=2) aas
         """)
         for wait in cursor:
             wait_name = wait[0]
