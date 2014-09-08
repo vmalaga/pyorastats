@@ -110,7 +110,7 @@ class OraStats():
                 sys.stdout.write("%s:%s " % (re.sub(r'\W', '', wait_name), wait_value))
             else:
                 #print re.sub(r'\W', '', wait_name).lower() , wait_value
-                print "PUTVAL %s/oracle_%s/gauge-wait_%s interval=30 N:%s" % (self.hostname, sid, re.sub(r'\W', '', wait_name).lower(), wait_value )
+                print "PUTVAL %s/oracle_%s/gauge-wait_%s interval=15 N:%s" % (self.hostname, sid, re.sub(r'\W', '', wait_name).lower(), wait_value )
 
 #connection.close()
 
