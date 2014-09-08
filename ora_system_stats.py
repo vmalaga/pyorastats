@@ -2,9 +2,10 @@ __author__ = 'vmalaga'
 
 import os
 import sys
-import cx_Oracle
+#import cx_Oracle
 import argparse
-import string
+#import string
+import re
 
 hostname = os.uname()[1]
 
@@ -84,6 +85,22 @@ class OraStats():
                 print "PUTVAL %s/oracle_%s/counter-cursors_cachehits interval=30 N:%s" % (self.hostname, sid, sess_cur_cache_hits)
         cursor.close()
 
+    def waitstats(self, user, passwd, sid, format):
+        cursor = self.connection.cursor()
+        cursor.execute("""
+        SELECT wait_class , time_waited
+        FROM v$system_wait_class
+        WHERE wait_class != 'Idle'
+        """)
+        for wait in cursor:
+            wait_name = wait[0]
+            wait_value = wait[1]
+            if format == 'cacti':
+                sys.stdout.write("%s:%s " % (re.sub(r'\W', '', wait_name), wait_value))
+            else:
+                #print re.sub(r'\W', '', wait_name).lower() , wait_value
+                print "PUTVAL %s/oracle_%s/counter-wait_%s interval=30 N:%s" % (self.hostname, sid, re.sub(r'\W', '', wait_name).lower(), wait_value )
+
 #connection.close()
 
 
@@ -118,6 +135,11 @@ if __name__ == "__main__":
     parser_curs.add_argument('-p', '--passwd', required=True)
     parser_curs.add_argument('-s', '--sid', help="tnsnames SID to connect", required=True)
 
+    parser_waits = subparsers.add_parser('WAITS', help="Get database waits stats")
+    parser_waits.add_argument('-u', '--user', help="Username with sys views grant", required=True)
+    parser_waits.add_argument('-p', '--passwd', required=True)
+    parser_waits.add_argument('-s', '--sid', help="tnsnames SID to connect", required=True)
+
     parser_all = subparsers.add_parser('ALL', help="Get all database stats")
     parser_all.add_argument('-u', '--user', help="Username with sys views grant", required=True)
     parser_all.add_argument('-p', '--passwd', required=True)
@@ -127,27 +149,28 @@ if __name__ == "__main__":
 
     if args.stat == "ASM":
         #args_asm = parser_asm.parse_args()
-        #noinspection PyArgumentList,PyArgumentList,PyArgumentList
-        stats = OraStats(args.user,args.passwd,args.sid,args.disk,args.format)
+        stats = OraStats(args.user, args.passwd ,args.sid)
         stats.asmdf(args.user,args.passwd,args.sid,args.disk,args.format)
 
     if args.stat == "PHYSIO":
-        #noinspection PyArgumentList,PyArgumentList,PyArgumentList
-        stats = OraStats(args.user,args.passwd,args.sid,args.disk,args.format)
+        stats = OraStats(args.user, args.passwd, args.sid)
         stats.phishio(args.user, args.passwd, args.sid, args.format)
 
     if args.stat == "ACTV":
-        #noinspection PyArgumentList,PyArgumentList,PyArgumentList
-        stats = OraStats(args.user,args.passwd,args.sid,args.disk,args.format)
+        stats = OraStats(args.user, args.passwd, args.sid)
         stats.activity(args.user, args.passwd, args.sid, args.format)
 
     if args.stat == "CURS":
-        #noinspection PyArgumentList,PyArgumentList,PyArgumentList
-        stats = OraStats(args.user,args.passwd,args.sid,args.disk,args.format)
+        stats = OraStats(args.user, args.passwd, args.sid)
         stats.cursorstats(args.user, args.passwd, args.sid, args.format)
+
+    if args.stat == "WAITS":
+        stats = OraStats(args.user, args.passwd, args.sid)
+        stats.waitstats(args.user, args.passwd, args.sid, args.format)
 
     if args.stat == "ALL":
         stats = OraStats(args.user, args.passwd, args.sid)
         stats.cursorstats(args.user, args.passwd, args.sid, args.format)
         stats.phishio(args.user, args.passwd, args.sid, args.format)
         stats.activity(args.user, args.passwd, args.sid, args.format)
+        stats.waitstats(args.user, args.passwd, args.sid, args.format)
