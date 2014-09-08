@@ -1,4 +1,4 @@
-# ora_system_stats
+# pyorastats
 
 ## Oracle system stats with output for *collectd* and *cacti*
 
