@@ -75,7 +75,11 @@ class OraStats():
     def cursorstats(self,user, passwd, sid,format):
         cursor = self.connection.cursor()
         cursor.execute("""
-        select sum ( decode ( name, 'opened cursors cumulative', value, 0)) total_cursors,sum ( decode ( name, 'opened cursors current',value,0)) current_cursors,sum ( decode ( name, 'session cursor cache hits',value,0)) sess_cur_cache_hits from v$sysstat where name in ( 'opened cursors cumulative','opened cursors current','session cursor cache hits' )""")
+        select sum ( decode ( name, 'opened cursors cumulative', value, 0)) total_cursors,
+            sum ( decode ( name, 'opened cursors current',value,0)) current_cursors,
+            sum ( decode ( name, 'session cursor cache hits',value,0)) sess_cur_cache_hits
+        from v$sysstat
+            where name in ( 'opened cursors cumulative','opened cursors current','session cursor cache hits' )""")
         for total_cursors, current_cursors, sess_cur_cache_hits in cursor:
             if format == 'cacti':
                 sys.stdout.write("total_cursors:%s current_cursors:%s sess_cur_cache_hits:%s" % (total_cursors, current_cursors, sess_cur_cache_hits))
@@ -110,7 +114,25 @@ class OraStats():
                 sys.stdout.write("%s:%s " % (re.sub(r'\W', '', wait_name), wait_value))
             else:
                 #print re.sub(r'\W', '', wait_name).lower() , wait_value
-                print "PUTVAL %s/oracle_%s/gauge-wait_%s interval=60 N:%s" % (self.hostname, sid, re.sub(r'\W', '', wait_name).lower(), wait_value )
+                print "PUTVAL %s/oracle_%s/gauge-wait_%s interval=30 N:%s" % (self.hostname, sid, re.sub(r'\W', '', wait_name).lower(), wait_value )
+
+    def logicalio(self, user, passwd, sid, format):
+        cursor = self.connection.cursor()
+        cursor.execute("""
+        select sum ( decode ( name, 'db block changes', value, 0 ) ) block_changes ,
+               sum ( decode ( name, 'db block gets', value, 0 ) ) current_reads ,
+               sum ( decode ( name, 'consistent gets', value, 0 ) ) consistent_reads
+        from v$sysstat
+         where name in ( 'db block changes', 'db block gets', 'consistent gets')
+         """)
+        for block_changes, current_reads, consistent_reads in cursor:
+            if format == 'cacti':
+                #print block_changes, current_reads, consistent_reads
+                sys.stdout.write("block_changes:%s current_reads:%s consistent_reads:%s" % (block_changes, current_reads, consistent_reads))
+            else:
+                print "PUTVAL %s/oracle_%s/counter-block_changes interval=30 N:%s" % (self.hostname, sid, block_changes)
+                print "PUTVAL %s/oracle_%s/gauge-current_reads interval=30 N:%s" % (self.hostname, sid, current_reads)
+                print "PUTVAL %s/oracle_%s/counter-consistent_reads interval=30 N:%s" % (self.hostname, sid, consistent_reads)
 
 #connection.close()
 
@@ -151,6 +173,11 @@ if __name__ == "__main__":
     parser_waits.add_argument('-p', '--passwd', required=True)
     parser_waits.add_argument('-s', '--sid', help="tnsnames SID to connect", required=True)
 
+    parser_logio = subparsers.add_parser('LOGIO', help="Get database logical IO stats")
+    parser_logio.add_argument('-u', '--user', help="Username with sys views grant", required=True)
+    parser_logio.add_argument('-p', '--passwd', required=True)
+    parser_logio.add_argument('-s', '--sid', help="tnsnames SID to connect", required=True)
+
     parser_all = subparsers.add_parser('ALL', help="Get all database stats")
     parser_all.add_argument('-u', '--user', help="Username with sys views grant", required=True)
     parser_all.add_argument('-p', '--passwd', required=True)
@@ -179,9 +206,14 @@ if __name__ == "__main__":
         stats = OraStats(args.user, args.passwd, args.sid)
         stats.waitstats(args.user, args.passwd, args.sid, args.format)
 
+    if args.stat == "LOGIO":
+        stats = OraStats(args.user, args.passwd, args.sid)
+        stats.logicalio(args.user, args.passwd, args.sid, args.format)
+
     if args.stat == "ALL":
         stats = OraStats(args.user, args.passwd, args.sid)
         stats.cursorstats(args.user, args.passwd, args.sid, args.format)
         stats.phishio(args.user, args.passwd, args.sid, args.format)
         stats.activity(args.user, args.passwd, args.sid, args.format)
         stats.waitstats(args.user, args.passwd, args.sid, args.format)
+        stats.logicalio(args.user, args.passwd, args.sid, args.format)
