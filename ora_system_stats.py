@@ -130,9 +130,9 @@ class OraStats():
                 #print block_changes, current_reads, consistent_reads
                 sys.stdout.write("block_changes:%s current_reads:%s consistent_reads:%s" % (block_changes, current_reads, consistent_reads))
             else:
-                print "PUTVAL %s/oracle_%s/counter-block_changes interval=30 N:%s" % (self.hostname, sid, block_changes)
-                print "PUTVAL %s/oracle_%s/gauge-current_reads interval=30 N:%s" % (self.hostname, sid, current_reads)
-                print "PUTVAL %s/oracle_%s/counter-consistent_reads interval=30 N:%s" % (self.hostname, sid, consistent_reads)
+                print "PUTVAL %s/oracle_%s/counter-logical_io_block_changes interval=30 N:%s" % (self.hostname, sid, block_changes)
+                print "PUTVAL %s/oracle_%s/counter-logical_io_current_reads interval=30 N:%s" % (self.hostname, sid, current_reads)
+                print "PUTVAL %s/oracle_%s/counter-logical_io_consistent_reads interval=30 N:%s" % (self.hostname, sid, consistent_reads)
 
 #connection.close()
 
