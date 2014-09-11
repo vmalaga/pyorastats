@@ -15,7 +15,7 @@
       "collapse": false,
       "panels": [
         {
-          "span": 12,
+          "span": 11,
           "editable": true,
           "type": "graph",
           "datasource": null,
@@ -32,10 +32,11 @@
             "rightMax": null,
             "leftMin": null,
             "rightMin": null,
-            "threshold1": null,
-            "threshold2": null,
-            "threshold1Color": "rgba(216, 171, 27, 0.27)",
-            "threshold2Color": "rgba(237, 1, 1, 0.22)"
+            "threshold1": 4,
+            "threshold2": 8,
+            "threshold1Color": "rgba(214, 113, 50, 0.27)",
+            "threshold2Color": "rgba(237, 1, 1, 0.22)",
+            "thresholdLine": false
           },
           "annotate": {
             "enable": false
@@ -55,7 +56,7 @@
             "max": false,
             "current": true,
             "total": false,
-            "avg": false,
+            "avg": true,
             "alignAsTable": true,
             "rightSide": true
           },
@@ -100,9 +101,6 @@
             },
             {
               "target": "alias(sumSeries(collectd.oradbcrm.oracle_CRM.gauge-wait_userio), 'User I/O')"
-            },
-            {
-              "target": "alias(nPercentile(sumSeries(collectd.oradbcrm.oracle_CRM.gauge-wait_*), 99), '99%')"
             }
           ],
           "aliasColors": {
@@ -110,21 +108,13 @@
             "CPU": "#508642",
             "Administrative": "#967302",
             "Configuration": "#3F2B5B",
-            "User I/O": "#052B51",
-            "System I/O": "#0A50A1"
+            "User I/O": "#0A437C",
+            "System I/O": "#1F78C1"
           },
           "leftYAxisLabel": "active session",
           "title": "SESSION WAITS",
           "id": 3,
-          "seriesOverrides": [
-            {
-              "alias": "99%",
-              "lines": true,
-              "bars": false,
-              "fill": 0,
-              "stack": false
-            }
-          ]
+          "seriesOverrides": []
         }
       ]
     },
@@ -135,7 +125,7 @@
       "collapse": false,
       "panels": [
         {
-          "span": 12,
+          "span": 11,
           "editable": true,
           "type": "graph",
           "id": 1,
@@ -153,8 +143,8 @@
             "rightMax": null,
             "leftMin": null,
             "rightMin": null,
-            "threshold1": null,
-            "threshold2": null,
+            "threshold1": 7500,
+            "threshold2": 14000,
             "threshold1Color": "rgba(216, 200, 27, 0.27)",
             "threshold2Color": "rgba(234, 112, 112, 0.22)"
           },
@@ -208,8 +198,16 @@
             "Commits": "#99440A",
             "Execute": "#1F78C1"
           },
-          "seriesOverrides": [],
-          "title": "Activity"
+          "seriesOverrides": [
+            {
+              "alias": "MEDIA",
+              "bars": false,
+              "lines": true,
+              "stack": false
+            }
+          ],
+          "title": "ACTIVITY",
+          "leftYAxisLabel": "Ops/s"
         }
       ]
     },
@@ -220,7 +218,7 @@
       "collapse": false,
       "panels": [
         {
-          "span": 12,
+          "span": 11,
           "editable": true,
           "type": "graph",
           "id": 2,
@@ -238,8 +236,8 @@
             "rightMax": null,
             "leftMin": null,
             "rightMin": null,
-            "threshold1": null,
-            "threshold2": null,
+            "threshold1": 9000,
+            "threshold2": 12264,
             "threshold1Color": "rgba(216, 200, 27, 0.27)",
             "threshold2Color": "rgba(234, 112, 112, 0.22)"
           },
@@ -275,13 +273,19 @@
           },
           "targets": [
             {
-              "target": "alias(collectd.oradbcrm.oracle_CRM.counter-physicalio_datafile_reads, 'Datafile reads')"
+              "target": "alias(collectd.oradbcrm.oracle_CRM.counter-physicalio_datafile_reads, 'Physical reads')"
             },
             {
-              "target": "alias(collectd.oradbcrm.oracle_CRM.counter-physicalio_datafile_writes, 'Datafile writes')"
+              "target": "alias(collectd.oradbcrm.oracle_CRM.counter-physicalio_datafile_writes, 'Physical writes')"
             },
             {
               "target": "alias(collectd.oradbcrm.oracle_CRM.counter-physicalio_redo_writes, 'Redo writes')"
+            },
+            {
+              "target": "alias(collectd.oradbcrm.oracle_CRM.counter-logical_io_current_reads, 'Logical reads')"
+            },
+            {
+              "target": "alias(collectd.oradbcrm.oracle_CRM.counter-logical_io_block_changes, 'Blocks changes')"
             }
           ],
           "aliasColors": {
@@ -289,10 +293,15 @@
             "counter-physicalio_datafile_writes": "#EA6460",
             "counter-physicalio_redo_writes": "#806EB7",
             "Datafile writes": "#890F02",
-            "Datafile reads": "#EF843C"
+            "Datafile reads": "#EF843C",
+            "Phisical writes": "#E24D42",
+            "Logical reads": "#3F6833",
+            "Blocks changes": "#EF843C",
+            "Physical reads": "#1F78C1"
           },
           "seriesOverrides": [],
-          "title": "Physical IO"
+          "title": "I/O SYSTEM",
+          "leftYAxisLabel": "IO/s"
         }
       ]
     }
@@ -306,6 +315,9 @@
         "5m",
         "15m",
         "1h",
+        "2h",
+        "3h",
+        "",
         "6h",
         "12h",
         "24h",
@@ -331,7 +343,7 @@
     }
   ],
   "time": {
-    "from": "now-1h",
+    "from": "now-2h",
     "to": "now"
   },
   "templating": {
