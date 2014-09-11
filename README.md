@@ -26,4 +26,4 @@ optional arguments:<br />
   
 Screenshot grafana dashboard
 
-![Alt text](http://i58.tinypic.com/1531t3m.png)
+![Alt text](http://i61.tinypic.com/35l6ubp.png)
