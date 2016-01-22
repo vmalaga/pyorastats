@@ -23,6 +23,25 @@ optional arguments:<br />
   -h, --help            show this help message and exit<br />
   -f {cacti,collectd}, --format {cacti,collectd} Output format, default collectd
   
+  Now if you want send this metrics to graphite need to complete your collectd config with this new 2 sections:
+  ```
+  LoadPlugin exec
+  <Plugin exec>
+        Exec collectd "python" "/path/to/ora_system_stats.py" "ALL" "-u" "system" "-p" "passwd" "-s" "SID"
+  </Plugin>
+
+  LoadPlugin write_graphite
+  <Plugin write_graphite>
+    <Node "graphitehost">
+      Host "localhost"
+      Port "2003"
+      Protocol "tcp"
+      LogSendErrors true
+      Prefix "collectd."
+    </Node>
+  </Plugin>
+  ```
+
   
 Screenshot grafana dashboard
 http://lnxnet.es/oracle-dashboard-with-graphite-collectd-and-pyorastats/
