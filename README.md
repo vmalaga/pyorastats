@@ -44,6 +44,6 @@ optional arguments:<br />
 
   
 Screenshot grafana dashboard
-http://lnxnet.es/oracle-dashboard-with-graphite-collectd-and-pyorastats/
+https://lnxnet.es/oracle-dashboard-with-graphite-collectd-and-pyorastats.html
 
 ![Alt text](http://i61.tinypic.com/35l6ubp.png)
